@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Our Anniversary</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="page-glow" aria-hidden="true">
+      <span class="orb orb-one"></span>
+      <span class="orb orb-two"></span>
+      <span class="orb orb-three"></span>
+    </div>
+
+    <div class="stage">
+      <header class="topbar">
+        <div class="brand-badge">Forever &nbsp;•&nbsp; Us</div>
+      </header>
+
+      <section class="panel active" id="panel-home">
+        <div class="hero-card">
+          <div class="hero-copy">
+            <p class="kicker">Happy anniversary</p>
+            <h1 class="title">Vinoth <span>&</span> Mesha</h1>
+            <p class="subtitle">Every day feels softer, brighter, and more beautiful with you.</p>
+            <div class="stat-pill"><span class="dot"></span> Together for <b id="dayCount">—</b> years</div>
+          </div>
+
+          <div class="date-card">
+            <p class="mini-label">Since</p>
+            <h2>12 September 2022</h2>
+            <div class="spark-row">
+              <i class="bi bi-envelope-heart"></i>
+              <i class="bi bi-stars"></i>
+              <i class="bi bi-moon-stars"></i>
+            </div>
+          </div>
+        </div>
+
+        <div class="menu-section">
+          <div class="section-heading">
+            <span>Play together</span>
+            <button class="ghost-btn" onclick="showPanel('memory')">Start the fun</button>
+          </div>
+
+          <div class="menu">
+            <button class="game-btn" data-accent="pink" onclick="showPanel('memory')">
+              <div class="game-icon"><i class="bi bi-suit-heart-fill"></i></div>
+              <div class="game-name">Memory Match</div>
+              <div class="game-desc">Flip, match, and celebrate every pair</div>
+            </button>
+            <button class="game-btn" data-accent="cyan" onclick="showPanel('trivia')">
+              <div class="game-icon"><i class="bi bi-chat-heart-fill"></i></div>
+              <div class="game-name">Love Trivia</div>
+              <div class="game-desc">See how well you know our story</div>
+            </button>
+            <button class="game-btn" data-accent="amber" onclick="showPanel('puzzle')">
+              <div class="game-icon"><i class="bi bi-pencil-square"></i></div>
+              <div class="game-name">Word Puzzle</div>
+              <div class="game-desc">Crack the words that describe us</div>
+            </button>
+            <button class="game-btn" data-accent="lime" onclick="showPanel('hunt')">
+              <div class="game-icon"><i class="bi bi-heart-pulse-fill"></i></div>
+              <div class="game-name">Heart Hunt</div>
+              <div class="game-desc">Track down every hidden little spark</div>
+            </button>
+          </div>
+        </div>
+
+        <div class="story-grid">
+          <article class="story-card">
+            <span class="story-tag">Our rhythm</span>
+            <h3>Slow, steady, and full of laughter.</h3>
+            <p>We make the best memories through the small things long talks, inside jokes, and quiet moments that feel like home.</p>
+          </article>
+          <article class="story-card">
+            <span class="story-tag">Favorite ritual</span>
+            <h3>Talking until the world feels lighter.</h3>
+            <p>Whether it is a tiny update or a big idea, being in each other’s world is the sweetest thing.</p>
+          </article>
+          <article class="story-card">
+            <span class="story-tag">Dreams</span>
+            <h3>Building a life that feels like yours.</h3>
+            <p>Every chapter we share keeps becoming more beautiful, more honest, and more full of love.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="panel" id="panel-memory">
+        <div class="panel-head">
+          <h2 class="panel-title">Memory Match</h2>
+          <button class="back-btn" onclick="showPanel('home')">← Home</button>
+        </div>
+        <div class="status-row">
+          <span>Moves: <b id="memMoves">0</b></span>
+          <span>Pairs found: <b id="memPairs">0</b> / 8</span>
+        </div>
+        <div class="win-msg" id="memWin">
+          <img class="win-picture" src="image/IMG_1613.JPG" alt="Our special moment together" />
+          <div class="win-copy">You found every pair! <span class="emoji">🎉</span></div>
+          <button class="primary-btn" onclick="startMemory()">Play again</button>
+        </div>
+        <div class="memory-grid" id="memoryGrid"></div>
+      </section>
+
+      <section class="panel" id="panel-trivia">
+        <div class="panel-head">
+          <h2 class="panel-title">Love Trivia</h2>
+          <button class="back-btn" onclick="showPanel('home')">← Home</button>
+        </div>
+        <div class="status-row">
+          <span>Question <b id="triQNum">1</b> / <b id="triQTotal">6</b></span>
+          <span>Score: <b id="triScore">0</b></span>
+        </div>
+        <div class="progress-wrap"><div class="progress-bar" id="triProgress"></div></div>
+        <div class="win-msg" id="triWin">
+          <img class="win-picture" src="image/B6B2F4B4-9055-4CA2-B119-607064969519.jpg" alt="Our special moment together" />
+          <div class="win-copy"></div>
+          <button class="primary-btn" onclick="startTrivia()">Play again</button>
+        </div>
+        <div id="triviaBody"></div>
+      </section>
+
+      <section class="panel" id="panel-puzzle">
+        <div class="panel-head">
+          <h2 class="panel-title">Word Puzzle</h2>
+          <button class="back-btn" onclick="showPanel('home')">← Home</button>
+        </div>
+        <div class="status-row">
+          <span>Word <b id="wpNum">1</b> / <b id="wpTotal">6</b></span>
+          <span>Solved: <b id="wpScore">0</b></span>
+        </div>
+        <div class="win-msg" id="wpWin">
+          <img class="win-picture" src="image/Screenshot 2026-09-10 9.54.44 PM.png" alt="Our special moment together" />
+          <div class="win-copy"></div>
+          <button class="primary-btn" onclick="startPuzzle()">Play again</button>
+        </div>
+        <div class="puzzle-card">
+          <div class="scramble" id="wpScramble"></div>
+          <div class="hint" id="wpHint"></div>
+          <div class="answer-row">
+            <input type="text" id="wpInput" placeholder="Type your answer..." autocomplete="off" />
+            <button class="primary-btn" onclick="checkPuzzle()">Check</button>
+          </div>
+          <div class="feedback" id="wpFeedback"></div>
+        </div>
+      </section>
+
+      <section class="panel" id="panel-hunt">
+        <div class="panel-head">
+          <h2 class="panel-title">Heart Hunt</h2>
+          <button class="back-btn" onclick="showPanel('home')">← Home</button>
+        </div>
+        <div class="status-row">
+          <span>Found: <b id="huntFound">0</b> / <b id="huntTotal">10</b></span>
+          <span>Time: <b id="huntTime">0s</b></span>
+        </div>
+        <div class="win-msg" id="huntWin">
+          <img class="win-picture" src="image/2882E496-3FC2-46A4-B0AB-4C734E642DD1.jpg" alt="Our special moment together" />
+          <div class="win-copy">All hearts found! <span class="emoji">💖</span></div>
+          <button class="primary-btn" onclick="startHunt()">Play again</button>
+        </div>
+        <div class="hunt-field" id="huntField"></div>
+      </section>
+
+      <footer>Made with love — click a game above to play</footer>
+    </div>
+
+    <script src="script.js" defer></script>
+  </body>
+</html>

@@ -484,38 +484,42 @@ const escapePhotos = [
 ];
 
 let escapePhotoIndex = 0;
+let escapeCarouselTimer = null;
+
+function stopEscapeCarousel() {
+    if (escapeCarouselTimer) clearInterval(escapeCarouselTimer);
+    escapeCarouselTimer = null;
+}
+
+function startEscapeCarousel() {
+    stopEscapeCarousel();
+    escapeCarouselTimer = setInterval(() => {
+        escapePhotoIndex = (escapePhotoIndex + 1) % escapePhotos.length;
+        renderEscapeCarousel();
+    }, 4500);
+}
 
 function renderEscapeCarousel() {
     const image = document.getElementById('carouselImage');
-    const dots = document.getElementById('carouselDots');
-    if (!image || !dots) return;
+    if (!image) return;
 
+    image.classList.remove('is-changing');
+    void image.offsetWidth;
     image.src = escapePhotos[escapePhotoIndex];
     image.alt = `Our special moment ${escapePhotoIndex + 1} of ${escapePhotos.length}`;
-    dots.innerHTML = escapePhotos
-        .map((_, index) => `<button class="carousel-dot${index === escapePhotoIndex ? ' active' : ''}" type="button" aria-label="Show photo ${index + 1}"></button>`)
-        .join('');
-    dots.querySelectorAll('.carousel-dot').forEach((dot, index) => {
-        dot.addEventListener('click', () => {
-            escapePhotoIndex = index;
-            renderEscapeCarousel();
-        });
-    });
+    image.classList.add('is-changing');
 }
 
 function initEscapeCarousel() {
-    const previous = document.getElementById('carouselPrevious');
-    const next = document.getElementById('carouselNext');
-    if (previous) {
-        previous.addEventListener('click', () => {
-            escapePhotoIndex = (escapePhotoIndex - 1 + escapePhotos.length) % escapePhotos.length;
-            renderEscapeCarousel();
+    const carousel = document.getElementById('escapeCarousel');
+    if (carousel) {
+        carousel.addEventListener('mouseenter', stopEscapeCarousel);
+        carousel.addEventListener('mouseleave', () => {
+            if (!carousel.hidden) startEscapeCarousel();
         });
-    }
-    if (next) {
-        next.addEventListener('click', () => {
-            escapePhotoIndex = (escapePhotoIndex + 1) % escapePhotos.length;
-            renderEscapeCarousel();
+        carousel.addEventListener('focusin', stopEscapeCarousel);
+        carousel.addEventListener('focusout', (event) => {
+            if (!carousel.contains(event.relatedTarget) && !carousel.hidden) startEscapeCarousel();
         });
     }
     renderEscapeCarousel();
@@ -523,6 +527,7 @@ function initEscapeCarousel() {
 
 function startEscape() {
     if (escapeState.timer) clearInterval(escapeState.timer);
+    stopEscapeCarousel();
     escapeState = { stage: 1, attempts: 3, seconds: 90, timer: null, hiddenKey: null };
 
     const winEl = document.getElementById('escapeWin');
@@ -651,7 +656,24 @@ function advanceEscape(message) {
     const feedbackEl = document.getElementById('escapeFeedback');
     if (feedbackEl) feedbackEl.textContent = message;
     if (escapeState.stage === 4) {
-        finishEscape('You solved the clues, cracked the password, and escaped!');
+        finishEscape(`Mahhhhaaaallllllllll!!!!!! ❤️
+
+HAPPY 4TH ANNIVERSARY! 🥹❤️
+
+This is the moment when I can truly say that I never felt this way before. It feels like I’m with the right person, in the right arms, and exactly where I’m supposed to be. Baby, I promise you, whatever happens this time, I will stick with you. I will be with you forever. I promise you and I promise God. ❤️
+
+Thank you for always being there through my ups and downs. Thank you for coming here for my graduation and for attending it. You were such a special visitor, and I never expected that one day, you would be the person standing there and watching me reach one of my biggest achievements. I really, really appreciate that with all my heart. I will never forget that moment. 🥹❤️
+
+You are the only man my relatives, friends, and my father have met, and that makes you even more special to me. I’m really proud of you, Mahal. Whatever happens to us—whether it’s about family, work, or our relationship—we will hold on tight and never let go.
+
+My heart will always be for you. ❤️
+
+I’ve already made up my mind that you are the last person I will ever fall in love with. Nothing else, no one else. Otherwise, I’ll die single and rich! HAHAHAHA! 😂😂
+
+I love you so much, Mahal. ❤️
+HAPPY 4TH ANNIVERSARY TO US! 🥹❤️
+
+Forever and always. ❤️`);
         return;
     }
     escapeState.stage += 1;
@@ -660,18 +682,20 @@ function advanceEscape(message) {
 
 function finishEscape(message) {
     if (escapeState.timer) clearInterval(escapeState.timer);
+    stopEscapeCarousel();
     escapeState.timer = null;
     const room = document.getElementById('escapeRoom');
     const winEl = document.getElementById('escapeWin');
     const carousel = document.getElementById('escapeCarousel');
-    const dots = document.getElementById('carouselDots');
     const escaped = !message.startsWith('GAME OVER');
     if (room) room.innerHTML = '';
     if (winEl) winEl.classList.toggle('game-over', !escaped);
     if (carousel) carousel.hidden = !escaped;
-    if (dots) dots.hidden = !escaped;
     setWinMessage(winEl, message);
-    if (escaped) renderEscapeCarousel();
+    if (escaped) {
+        renderEscapeCarousel();
+        startEscapeCarousel();
+    }
 }
 
 document.addEventListener('DOMContentLoaded', () => {

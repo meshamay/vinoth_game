@@ -21,7 +21,7 @@ function playMusicNote() {
     oscillator.type = 'sine';
     oscillator.frequency.setValueAtTime(frequency, now);
     noteGain.gain.setValueAtTime(0.0001, now);
-    noteGain.gain.exponentialRampToValueAtTime(0.045, now + 0.06);
+    noteGain.gain.exponentialRampToValueAtTime(0.16, now + 0.06);
     noteGain.gain.exponentialRampToValueAtTime(0.0001, now + 1.25);
     oscillator.connect(noteGain);
     noteGain.connect(audioState.masterGain);
@@ -37,13 +37,14 @@ function startMusic() {
         if (!AudioContext) return;
         audioState.context = new AudioContext();
         audioState.masterGain = audioState.context.createGain();
-        audioState.masterGain.gain.value = 0.34;
+        audioState.masterGain.gain.value = 0.58;
         audioState.masterGain.connect(audioState.context.destination);
     }
 
     audioState.context.resume();
     audioState.isPlaying = true;
     audioState.noteIndex = 0;
+    window.clearInterval(audioState.timer);
     playMusicNote();
     audioState.timer = window.setInterval(playMusicNote, 1400);
     updateSoundButton(button);
@@ -90,7 +91,7 @@ function playGameSound(type) {
         oscillator.type = 'triangle';
         oscillator.frequency.setValueAtTime(frequency, start);
         soundGain.gain.setValueAtTime(0.0001, start);
-        soundGain.gain.exponentialRampToValueAtTime(0.08, start + 0.02);
+        soundGain.gain.exponentialRampToValueAtTime(0.18, start + 0.02);
         soundGain.gain.exponentialRampToValueAtTime(0.0001, start + 0.2);
         oscillator.connect(soundGain);
         soundGain.connect(audioState.masterGain);

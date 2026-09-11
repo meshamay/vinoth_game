@@ -1,5 +1,104 @@
 const anniversaryDate = new Date('2022-12-14T00:00:00');
 
+const audioState = {
+    context: null,
+    masterGain: null,
+    timer: null,
+    isPlaying: false,
+    noteIndex: 0,
+};
+
+const melody = [261.63, 329.63, 392, 329.63, 293.66, 349.23, 440, 349.23];
+
+function playMusicNote() {
+    if (!audioState.context || !audioState.masterGain || !audioState.isPlaying) return;
+
+    const oscillator = audioState.context.createOscillator();
+    const noteGain = audioState.context.createGain();
+    const now = audioState.context.currentTime;
+    const frequency = melody[audioState.noteIndex % melody.length];
+
+    oscillator.type = 'sine';
+    oscillator.frequency.setValueAtTime(frequency, now);
+    noteGain.gain.setValueAtTime(0.0001, now);
+    noteGain.gain.exponentialRampToValueAtTime(0.045, now + 0.06);
+    noteGain.gain.exponentialRampToValueAtTime(0.0001, now + 1.25);
+    oscillator.connect(noteGain);
+    noteGain.connect(audioState.masterGain);
+    oscillator.start(now);
+    oscillator.stop(now + 1.3);
+    audioState.noteIndex += 1;
+}
+
+function startMusic() {
+    const button = document.getElementById('soundToggle');
+    if (!audioState.context) {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContext) return;
+        audioState.context = new AudioContext();
+        audioState.masterGain = audioState.context.createGain();
+        audioState.masterGain.gain.value = 0.34;
+        audioState.masterGain.connect(audioState.context.destination);
+    }
+
+    audioState.context.resume();
+    audioState.isPlaying = true;
+    audioState.noteIndex = 0;
+    playMusicNote();
+    audioState.timer = window.setInterval(playMusicNote, 1400);
+    updateSoundButton(button);
+}
+
+function stopMusic() {
+    audioState.isPlaying = false;
+    window.clearInterval(audioState.timer);
+    audioState.timer = null;
+    updateSoundButton(document.getElementById('soundToggle'));
+}
+
+function updateSoundButton(button) {
+    if (!button) return;
+    const isPlaying = audioState.isPlaying;
+    button.setAttribute('aria-label', isPlaying ? 'Turn music off' : 'Turn music on');
+    button.setAttribute('aria-pressed', String(isPlaying));
+    button.innerHTML = `<i class="bi bi-volume-${isPlaying ? 'up' : 'mute'}-fill" aria-hidden="true"></i><span>Music ${isPlaying ? 'on' : 'off'}</span>`;
+}
+
+function toggleMusic() {
+    if (audioState.isPlaying) {
+        stopMusic();
+    } else {
+        startMusic();
+    }
+}
+
+function playGameSound(type) {
+    if (!audioState.context || !audioState.masterGain || !audioState.isPlaying) return;
+
+    const sounds = {
+        tap: [520],
+        success: [523.25, 659.25, 783.99],
+        error: [220, 174.61],
+    };
+    const frequencies = sounds[type] || sounds.tap;
+    const now = audioState.context.currentTime;
+
+    frequencies.forEach((frequency, index) => {
+        const oscillator = audioState.context.createOscillator();
+        const soundGain = audioState.context.createGain();
+        const start = now + index * 0.08;
+        oscillator.type = 'triangle';
+        oscillator.frequency.setValueAtTime(frequency, start);
+        soundGain.gain.setValueAtTime(0.0001, start);
+        soundGain.gain.exponentialRampToValueAtTime(0.08, start + 0.02);
+        soundGain.gain.exponentialRampToValueAtTime(0.0001, start + 0.2);
+        oscillator.connect(soundGain);
+        soundGain.connect(audioState.masterGain);
+        oscillator.start(start);
+        oscillator.stop(start + 0.24);
+    });
+}
+
 function updateDayCount() {
     const msPerDay = 1000 * 60 * 60 * 24;
     const days = Math.floor((Date.now() - anniversaryDate.getTime()) / msPerDay);
@@ -15,6 +114,11 @@ function showPanel(panelName) {
     panels.forEach((panel) => {
         panel.classList.toggle('active', panel.id === `panel-${panelName}`);
     });
+    if (panelName === 'home') {
+        stopMusic();
+    } else {
+        startMusic();
+    }
 }
 
 function setWinMessage(element, message) {
@@ -106,6 +210,7 @@ function handleMemoryClick(card) {
     }
 
     card.classList.add('flipped');
+    playGameSound('tap');
 
     if (!memoryState.firstCard) {
         memoryState.firstCard = card;
@@ -121,6 +226,7 @@ function handleMemoryClick(card) {
     const matched = memoryState.firstCard.dataset.symbol === memoryState.secondCard.dataset.symbol;
 
     if (matched) {
+        playGameSound('success');
         memoryState.firstCard.classList.add('matched');
         memoryState.secondCard.classList.add('matched');
         memoryState.pairsFound += 1;
@@ -139,6 +245,7 @@ function handleMemoryClick(card) {
     }
 
     memoryState.lockBoard = true;
+    playGameSound('error');
     setTimeout(() => {
         if (memoryState.firstCard) memoryState.firstCard.classList.remove('flipped');
         if (memoryState.secondCard) memoryState.secondCard.classList.remove('flipped');
@@ -255,6 +362,7 @@ function handleTriviaAnswer(button, correctAnswer) {
     const buttons = button.parentElement.querySelectorAll('.opt-btn');
     const selected = button.dataset.answer;
     const isCorrect = selected === correctAnswer;
+    playGameSound(isCorrect ? 'success' : 'error');
 
     buttons.forEach((btn) => {
         btn.disabled = true;
@@ -362,6 +470,7 @@ function checkPuzzle() {
     const guess = inputEl.value.trim();
 
     if (!guess) {
+        playGameSound('error');
         if (feedbackEl) {
             feedbackEl.textContent = 'Type an answer first.';
             feedbackEl.className = 'feedback bad';
@@ -370,6 +479,7 @@ function checkPuzzle() {
     }
 
     if (guess.toLowerCase() === current.word.toLowerCase()) {
+        playGameSound('success');
         puzzleState.score += 1;
         if (scoreEl) scoreEl.textContent = String(puzzleState.score);
         if (feedbackEl) {
@@ -392,6 +502,7 @@ function checkPuzzle() {
     }
 
     if (feedbackEl) {
+        playGameSound('error');
         feedbackEl.textContent = 'Not quite — try again.';
         feedbackEl.className = 'feedback bad';
     }
@@ -436,6 +547,7 @@ function startHunt() {
 
         heart.addEventListener('click', () => {
             if (heart.classList.contains('found')) return;
+            playGameSound('success');
             heart.classList.add('found');
             huntState.found += 1;
 
@@ -571,8 +683,13 @@ function renderEscapeStage() {
             object.textContent = ['♡', '✦', '◌', '◇', '✧', '○', '⌁', '△'][index];
             object.setAttribute('aria-label', 'Search object');
             object.addEventListener('click', () => {
-                if (index === escapeState.hiddenKey) advanceEscape('You found the key. The first lock clicks open.');
-                else loseEscapeAttempt(object, 'Not the key. Search somewhere else.');
+                if (index === escapeState.hiddenKey) {
+                    playGameSound('success');
+                    advanceEscape('You found the key. The first lock clicks open.');
+                } else {
+                    playGameSound('error');
+                    loseEscapeAttempt(object, 'Not the key. Search somewhere else.');
+                }
             });
             grid.appendChild(object);
         }
@@ -638,8 +755,13 @@ function renderEscapeStage() {
 
 function checkEscapeAnswer(value, answers, successMessage) {
     const answer = value.trim().toLowerCase();
-    if (answers.includes(answer)) advanceEscape(successMessage);
-    else loseEscapeAttempt(null, 'That answer does not unlock this clue.');
+    if (answers.includes(answer)) {
+        playGameSound('success');
+        advanceEscape(successMessage);
+    } else {
+        playGameSound('error');
+        loseEscapeAttempt(null, 'That answer does not unlock this clue.');
+    }
 }
 
 function loseEscapeAttempt(element, message) {
@@ -707,6 +829,9 @@ document.addEventListener('DOMContentLoaded', () => {
     startHunt();
     initEscapeCarousel();
     startEscape();
+
+    const soundToggle = document.getElementById('soundToggle');
+    if (soundToggle) soundToggle.addEventListener('click', toggleMusic);
 
     const input = document.getElementById('wpInput');
     if (input) {

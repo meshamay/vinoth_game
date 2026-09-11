@@ -92,7 +92,7 @@ function startMemory() {
 
     if (movesEl) movesEl.textContent = '0';
     if (pairsEl) pairsEl.textContent = '0 / 8';
-    if (winEl) winEl.classList.remove('show');
+    if (winEl) winEl.classList.remove('show', 'game-over');
 }
 
 function handleMemoryClick(card) {
@@ -234,10 +234,11 @@ function renderTriviaQuestion() {
     if (progressEl) progressEl.style.width = `${progress}%`;
 
     const question = triviaSet[triviaState.currentIndex];
+    const options = shuffle(question.options);
     body.innerHTML = `
     <div class="trivia-q">${question.question}</div>
     <div class="trivia-opts">
-      ${question.options
+        ${options
             .map(
                 (option) => `<button type="button" class="opt-btn" data-answer="${option}">${option}</button>`,
             )
@@ -455,6 +456,224 @@ function startHunt() {
     }, 1000);
 }
 
+let escapeState = {
+    stage: 1,
+    attempts: 3,
+    seconds: 90,
+    timer: null,
+    hiddenKey: null,
+};
+
+const escapePhotos = [
+    'image/IMG_1613.JPG',
+    'image/B6B2F4B4-9055-4CA2-B119-607064969519.jpg',
+    'image/Screenshot 2026-09-10 9.54.44 PM.png',
+    'image/2882E496-3FC2-46A4-B0AB-4C734E642DD1.jpg',
+    'image/IMG_4457.JPG',
+    'image/IMG_4669.JPG',
+    'image/Screenshot 2026-09-11 11.04.10 AM.png',
+    'image/Screenshot 2026-09-11 11.04.47 AM.png',
+    'image/Screenshot 2026-09-11 11.05.26 AM.png',
+    'image/Screenshot 2026-09-11 11.06.00 AM.png',
+    'image/Screenshot 2026-09-11 11.06.27 AM.png',
+    'image/Screenshot 2026-09-11 11.06.54 AM.png',
+    'image/Screenshot 2026-09-11 11.07.19 AM.png',
+    'image/Screenshot 2026-09-11 11.08.24 AM.png',
+    'image/Screenshot 2026-09-11 11.09.46 AM.png',
+    'image/Screenshot 2026-09-11 11.10.10 AM.png',
+];
+
+let escapePhotoIndex = 0;
+
+function renderEscapeCarousel() {
+    const image = document.getElementById('carouselImage');
+    const dots = document.getElementById('carouselDots');
+    if (!image || !dots) return;
+
+    image.src = escapePhotos[escapePhotoIndex];
+    image.alt = `Our special moment ${escapePhotoIndex + 1} of ${escapePhotos.length}`;
+    dots.innerHTML = escapePhotos
+        .map((_, index) => `<button class="carousel-dot${index === escapePhotoIndex ? ' active' : ''}" type="button" aria-label="Show photo ${index + 1}"></button>`)
+        .join('');
+    dots.querySelectorAll('.carousel-dot').forEach((dot, index) => {
+        dot.addEventListener('click', () => {
+            escapePhotoIndex = index;
+            renderEscapeCarousel();
+        });
+    });
+}
+
+function initEscapeCarousel() {
+    const previous = document.getElementById('carouselPrevious');
+    const next = document.getElementById('carouselNext');
+    if (previous) {
+        previous.addEventListener('click', () => {
+            escapePhotoIndex = (escapePhotoIndex - 1 + escapePhotos.length) % escapePhotos.length;
+            renderEscapeCarousel();
+        });
+    }
+    if (next) {
+        next.addEventListener('click', () => {
+            escapePhotoIndex = (escapePhotoIndex + 1) % escapePhotos.length;
+            renderEscapeCarousel();
+        });
+    }
+    renderEscapeCarousel();
+}
+
+function startEscape() {
+    if (escapeState.timer) clearInterval(escapeState.timer);
+    escapeState = { stage: 1, attempts: 3, seconds: 90, timer: null, hiddenKey: null };
+
+    const winEl = document.getElementById('escapeWin');
+    const attemptsEl = document.getElementById('escapeAttempts');
+    const timeEl = document.getElementById('escapeTime');
+    if (winEl) winEl.classList.remove('show');
+    if (attemptsEl) attemptsEl.textContent = '3';
+    if (timeEl) timeEl.textContent = '90s';
+    renderEscapeStage();
+
+    escapeState.timer = setInterval(() => {
+        escapeState.seconds -= 1;
+        if (timeEl) timeEl.textContent = `${escapeState.seconds}s`;
+        if (escapeState.seconds <= 0) finishEscape('GAME OVER: Time is up. The room stays locked for now.');
+    }, 1000);
+}
+
+function renderEscapeStage() {
+    const room = document.getElementById('escapeRoom');
+    const stageEl = document.getElementById('escapeStage');
+    const feedbackEl = document.getElementById('escapeFeedback');
+    if (!room) return;
+
+    if (stageEl) stageEl.textContent = String(escapeState.stage);
+    if (feedbackEl) feedbackEl.textContent = '';
+    room.innerHTML = '';
+
+    if (escapeState.stage === 1) {
+        escapeState.hiddenKey = Math.floor(Math.random() * 8);
+        room.innerHTML = `
+          <span class="escape-label">Clue 1: Find the key</span>
+          <h3>The lock is waiting. One object in this room can open it.</h3>
+          <p>Search carefully. Click the hidden key before the clock catches you.</p>
+          <div class="hidden-object-grid" id="hiddenObjectGrid"></div>
+        `;
+        const grid = room.querySelector('#hiddenObjectGrid');
+        for (let index = 0; index < 8; index += 1) {
+            const object = document.createElement('button');
+            object.type = 'button';
+            object.className = 'hidden-object';
+            object.textContent = ['♡', '✦', '◌', '◇', '✧', '○', '⌁', '△'][index];
+            object.setAttribute('aria-label', 'Search object');
+            object.addEventListener('click', () => {
+                if (index === escapeState.hiddenKey) advanceEscape('You found the key. The first lock clicks open.');
+                else loseEscapeAttempt(object, 'Not the key. Search somewhere else.');
+            });
+            grid.appendChild(object);
+        }
+        return;
+    }
+
+    if (escapeState.stage === 2) {
+        room.innerHTML = `
+          <span class="escape-label">Clue 2: Solve the riddle</span>
+          <h3>I grow when we share me, but shrink when we hide me. What am I?</h3>
+          <div class="escape-answer-row">
+            <input type="text" id="escapeRiddleInput" placeholder="Your answer..." autocomplete="off" />
+            <button class="primary-btn" id="escapeRiddleButton">Unlock</button>
+          </div>
+        `;
+        const input = room.querySelector('#escapeRiddleInput');
+        const check = () => checkEscapeAnswer(input.value, ['trust', 'love'], 'The riddle unlocks the next room.');
+        room.querySelector('#escapeRiddleButton').addEventListener('click', check);
+        input.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') check();
+        });
+        input.focus();
+        return;
+    }
+
+    if (escapeState.stage === 3) {
+        room.innerHTML = `
+          <span class="escape-label">Clue 3: Crack the password</span>
+          <h3>The password is hidden in plain sight: the promise that has no ending.</h3>
+          <p class="escape-hint">Enter the one word that describes the two of you.</p>
+          <div class="escape-answer-row">
+            <input type="text" id="escapePasswordInput" placeholder="Password" autocomplete="off" />
+            <button class="primary-btn" id="escapePasswordButton">Enter</button>
+          </div>
+        `;
+        const input = room.querySelector('#escapePasswordInput');
+        const check = () => checkEscapeAnswer(input.value, ['forever'], 'Password accepted. One final puzzle remains.');
+        room.querySelector('#escapePasswordButton').addEventListener('click', check);
+        input.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') check();
+        });
+        input.focus();
+        return;
+    }
+
+    room.innerHTML = `
+      <span class="escape-label">Clue 4: Decode the final lock</span>
+      <h3>Rearrange these letters into the word that means “never apart.”</h3>
+      <div class="escape-scramble">R E H T E G O T</div>
+      <div class="escape-answer-row">
+        <input type="text" id="escapeFinalInput" placeholder="Final answer" autocomplete="off" />
+        <button class="primary-btn" id="escapeFinalButton">Escape</button>
+      </div>
+    `;
+    const input = room.querySelector('#escapeFinalInput');
+    const check = () => checkEscapeAnswer(input.value, ['together'], 'The final lock opens.');
+    room.querySelector('#escapeFinalButton').addEventListener('click', check);
+    input.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') check();
+    });
+    input.focus();
+}
+
+function checkEscapeAnswer(value, answers, successMessage) {
+    const answer = value.trim().toLowerCase();
+    if (answers.includes(answer)) advanceEscape(successMessage);
+    else loseEscapeAttempt(null, 'That answer does not unlock this clue.');
+}
+
+function loseEscapeAttempt(element, message) {
+    escapeState.attempts -= 1;
+    const attemptsEl = document.getElementById('escapeAttempts');
+    const feedbackEl = document.getElementById('escapeFeedback');
+    if (attemptsEl) attemptsEl.textContent = String(escapeState.attempts);
+    if (feedbackEl) feedbackEl.textContent = message;
+    if (element) element.classList.add('escape-wrong');
+    if (escapeState.attempts <= 0) finishEscape('GAME OVER: You ran out of attempts. The room wins this round.');
+}
+
+function advanceEscape(message) {
+    const feedbackEl = document.getElementById('escapeFeedback');
+    if (feedbackEl) feedbackEl.textContent = message;
+    if (escapeState.stage === 4) {
+        finishEscape('You solved the clues, cracked the password, and escaped!');
+        return;
+    }
+    escapeState.stage += 1;
+    setTimeout(renderEscapeStage, 550);
+}
+
+function finishEscape(message) {
+    if (escapeState.timer) clearInterval(escapeState.timer);
+    escapeState.timer = null;
+    const room = document.getElementById('escapeRoom');
+    const winEl = document.getElementById('escapeWin');
+    const carousel = document.getElementById('escapeCarousel');
+    const dots = document.getElementById('carouselDots');
+    const escaped = !message.startsWith('GAME OVER');
+    if (room) room.innerHTML = '';
+    if (winEl) winEl.classList.toggle('game-over', !escaped);
+    if (carousel) carousel.hidden = !escaped;
+    if (dots) dots.hidden = !escaped;
+    setWinMessage(winEl, message);
+    if (escaped) renderEscapeCarousel();
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     updateDayCount();
     showPanel('home');
@@ -462,6 +681,8 @@ document.addEventListener('DOMContentLoaded', () => {
     startTrivia();
     startPuzzle();
     startHunt();
+    initEscapeCarousel();
+    startEscape();
 
     const input = document.getElementById('wpInput');
     if (input) {

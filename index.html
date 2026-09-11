@@ -69,6 +69,11 @@
               <div class="game-name">Heart Hunt</div>
               <div class="game-desc">Track down every hidden little spark</div>
             </button>
+            <button class="game-btn" data-accent="violet" onclick="showPanel('logic')">
+              <div class="game-icon"><i class="bi bi-door-closed-fill"></i></div>
+              <div class="game-name">Escape Room</div>
+              <div class="game-desc">Solve clues, crack passwords, and escape</div>
+            </button>
           </div>
         </div>
 
@@ -166,6 +171,32 @@
           <button class="primary-btn" onclick="startHunt()">Play again</button>
         </div>
         <div class="hunt-field" id="huntField"></div>
+      </section>
+
+      <section class="panel" id="panel-logic">
+        <div class="panel-head">
+          <h2 class="panel-title">Escape Room</h2>
+          <button class="back-btn" onclick="showPanel('home')">← Home</button>
+        </div>
+        <div class="status-row">
+          <span>Stage <b id="escapeStage">1</b> / 4</span>
+          <span>Attempts: <b id="escapeAttempts">3</b></span>
+          <span>Time: <b id="escapeTime">90s</b></span>
+        </div>
+        <div class="win-msg" id="escapeWin">
+          <div class="escape-carousel" id="escapeCarousel">
+            <button class="carousel-btn" id="carouselPrevious" type="button" aria-label="Previous photo">&#8592;</button>
+            <img class="win-picture" id="carouselImage" src="image/IMG_1613.JPG" alt="Our special moment together" />
+            <button class="carousel-btn" id="carouselNext" type="button" aria-label="Next photo">&#8594;</button>
+          </div>
+          <div class="carousel-dots" id="carouselDots" aria-label="Photo navigation"></div>
+          <div class="win-copy">You escaped! <span class="emoji">🔓</span></div>
+          <button class="primary-btn" onclick="startEscape()">Try again</button>
+        </div>
+        <div class="escape-card">
+          <div class="escape-room" id="escapeRoom"></div>
+          <div class="feedback" id="escapeFeedback"></div>
+        </div>
       </section>
 
       <footer>Made with love — click a game above to play</footer>

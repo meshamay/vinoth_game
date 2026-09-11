@@ -338,6 +338,7 @@ body {
 .game-btn[data-accent="cyan"] { --accent: var(--cyan); }
 .game-btn[data-accent="amber"] { --accent: var(--amber); }
 .game-btn[data-accent="lime"] { --accent: var(--lime); }
+.game-btn[data-accent="violet"] { --accent: var(--violet); }
 
 .game-btn:focus-visible {
   outline: 2px solid var(--accent);
@@ -496,6 +497,55 @@ body {
   box-shadow: 0 8px 22px rgba(15, 23, 42, 0.25);
 }
 
+.escape-carousel {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.escape-carousel[hidden],
+.carousel-dots[hidden] {
+  display: none;
+}
+
+.carousel-btn {
+  width: 38px;
+  height: 38px;
+  flex: 0 0 auto;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.07);
+  color: var(--text);
+  font-size: 1.15rem;
+  cursor: pointer;
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+.carousel-btn:hover {
+  transform: scale(1.08);
+  border-color: var(--cyan);
+}
+
+.carousel-dots {
+  display: flex;
+  gap: 7px;
+}
+
+.carousel-dot {
+  width: 8px;
+  height: 8px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.28);
+  cursor: pointer;
+}
+
+.carousel-dot.active {
+  background: var(--pink);
+  box-shadow: 0 0 10px rgba(255, 94, 168, 0.7);
+}
+
 .win-copy {
   width: min(100%, 680px);
   min-width: 0;
@@ -506,6 +556,11 @@ body {
 
 .win-msg.show {
   display: flex;
+}
+
+.win-msg.game-over {
+  border-color: rgba(255, 94, 168, 0.65);
+  background: rgba(255, 94, 168, 0.1);
 }
 
 .primary-btn {
@@ -744,6 +799,117 @@ body {
   color: var(--pink);
 }
 
+.escape-card {
+  max-width: 680px;
+  padding: 20px 18px 18px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  background: rgba(15, 23, 42, 0.38);
+}
+
+.escape-room {
+  min-height: 300px;
+}
+
+.escape-label {
+  display: inline-block;
+  margin-bottom: 12px;
+  color: var(--violet);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.escape-room h3 {
+  margin: 0 0 12px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: clamp(1.25rem, 3vw, 1.7rem);
+  line-height: 1.3;
+}
+
+.escape-room p,
+.escape-hint {
+  margin: 0 0 16px;
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
+.hidden-object-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  max-width: 420px;
+  margin-top: 22px;
+}
+
+.hidden-object {
+  aspect-ratio: 1;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: transform 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.hidden-object:hover {
+  transform: translateY(-3px) rotate(4deg);
+  border-color: var(--violet);
+  color: var(--text);
+}
+
+.escape-answer-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  max-width: 500px;
+  margin-top: 24px;
+}
+
+.escape-answer-row input {
+  flex: 1;
+  min-width: 220px;
+  padding: 13px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text);
+  font-size: 0.96rem;
+}
+
+.escape-answer-row input:focus {
+  outline: 2px solid rgba(139, 92, 246, 0.8);
+  border-color: transparent;
+}
+
+.escape-scramble {
+  width: fit-content;
+  margin: 22px 0;
+  padding: 14px 18px;
+  border: 1px solid rgba(139, 92, 246, 0.42);
+  border-radius: var(--radius-sm);
+  background: rgba(139, 92, 246, 0.1);
+  color: var(--cyan);
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: clamp(1.35rem, 4vw, 2.2rem);
+  font-weight: 700;
+  letter-spacing: 0.16em;
+}
+
+.escape-wrong {
+  animation: logicShake 0.24s ease;
+  border-color: var(--pink);
+  color: var(--pink);
+}
+
+@keyframes logicShake {
+  0%, 100% { transform: translateX(0); }
+  35% { transform: translateX(-5px); }
+  70% { transform: translateX(5px); }
+}
+
 .hunt-field {
   position: relative;
   width: 100%;
@@ -819,4 +985,9 @@ footer {
   .memory-grid {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
+
+  .hidden-object-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
 }
